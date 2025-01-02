@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "main": "index.js",
   "scripts": {
-    "test": "\"echo \\\"Error: no test specified\\\" && exit 1\""
+    "start": "node index.js",
+    "test": "\"echo \\\"Error: no test specified\\\" && exit 1\"",
+    "dev": "nodemon index.js"
   },
   "repository": {
     "type": "git",
@@ -15,11 +17,5 @@
     "url": "https://github.com/Yiniann/Phonebook-backend/issues"
   },
   "homepage": "https://github.com/Yiniann/Phonebook-backend#readme",
-  "description": "",
-  "dependencies": {
-    "express": "^4.21.2"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.9"
-  }
+  "description": ""
 }
