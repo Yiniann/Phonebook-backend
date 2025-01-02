@@ -17,5 +17,9 @@
     "url": "https://github.com/Yiniann/Phonebook-backend/issues"
   },
   "homepage": "https://github.com/Yiniann/Phonebook-backend#readme",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
+  }
 }
