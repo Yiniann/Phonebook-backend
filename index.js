@@ -1,6 +1,6 @@
 const express = require('express')
 const app = express()
-require('dotenv').config
+require('dotenv').config()
 const Phonebook = require('./models/phonebook')
 const cors = require('cors')
 app.use(cors())
@@ -16,7 +16,7 @@ app.get('/', (request, response) => {
 //获取所有联系人
 app.get('/api/persons', (request, response) => {
   Phonebook.find({}).then(persons=>{
-    response(json(persons))
+    response.json(persons)
   })
 })
 //信息
@@ -55,11 +55,11 @@ app.post('/api/persons',(request,response)=>{
             error:'name must be unique'
         })
     }
-    const person ={
-        name:body.name,
-        number:body.number
-    }
-    persons.save().then(savePersons=>{
+    const person = new Phonebook({
+      name: body.name,
+      number: body.number
+    })
+    person.save().then(savePersons=>{
       response.json(savePersons)
     })
 })
