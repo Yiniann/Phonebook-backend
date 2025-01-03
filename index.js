@@ -1,47 +1,66 @@
 const express = require('express')
 const app = express()
-require('dotenv').config()
-const Phonebook = require('./models/phonebook')
-const cors = require('cors')
+require('dotenv').config()//环境变量
+const Phonebook = require('./models/phonebook')//引入MongoDB模型
+const cors = require('cors')//允许跨域
+
 app.use(cors())
 app.use(express.json())
 app.use(express.static('dist'))
 
 let persons = []
-
+//根路由
 app.get('/', (request, response) => {
   response.send('<h1>Hello World!</h1>')
 })
 
+
+//获取电话本信息
+app.get('/info',(request,response,next)=>{
+  const date = new Date()
+  Phonebook.countDocuments(({})
+  .then(count=>{
+    response.send(`<p>Phonebook has info for ${count} people</p><p>${date}</p>`)
+  }))
+  .catch(error=>next(error))
+})
+
 //获取所有联系人
-app.get('/api/persons', (request, response) => {
-  Phonebook.find({}).then(persons=>{
+app.get('/api/persons', (request, response,next) => {
+  Phonebook.find({})
+  .then(persons=>{
     response.json(persons)
-    .catch(error=>next(error))
-  })
-})
-//信息
-app.get('/info',(request,response)=>{
-    const date = new Date()
-    response.send(`<p>Phonebook has info for ${persons.length} people</p><p>${date}</p>`)
-})
-//获取单个联系人
-app.get('/api/persons/:id',(request,response)=>{
-  Phonebook.findById(request.params.id).then(person=>{
-    response.json(person)
   })
   .catch(error=>next(error))
 })
+
+//获取单个联系人
+app.get('/api/persons/:id',(request,response,next)=>{
+  Phonebook.findById(request.params.id)
+  .then(person=>{
+    if(person){
+      response.json(person)
+    }else{
+      response.status(404).end()
+    }
+  })
+  .catch(error=>next(error))
+})
+
+
 //删除联系人
-app.delete('/api/persons/:id',(request,response)=>{
-    Phonebook.findByIdAndDelete(request.params.id).then(()=>{
+app.delete('/api/persons/:id',(request,response,next)=>{
+    Phonebook.findByIdAndDelete(request.params.id)
+    .then(()=>{
       response.status(204).end()
     })
     .catch(error=>next(error))
 })
+
 //增加联系人
-app.post('/api/persons',(request,response)=>{
+app.post('/api/persons',(request,response,next)=>{
     const body = request.body
+
     if (!body.name){
         return response.status(400).json({
             error:'name missing'
@@ -52,32 +71,52 @@ app.post('/api/persons',(request,response)=>{
             error:'number missing'
         })
     }
-    const existperson = persons.find(person=>person.name === body.name)
-    if (existperson){
+    //检查唯一性名字的
+    Phonebook.findOne({name:body.name})
+    .then(exitingperson=>{
+      if(exitingperson){
         return response.status(400).json({
-            error:'name must be unique'
+          error:'name must be unique'
         })
-    }
+      }
+    })
+
     const person = new Phonebook({
       name: body.name,
       number: body.number
     })
+
+    //保存到数据库
     person.save().then(savePersons=>{
       response.json(savePersons)
     })
     .catch(error=>next(error))
 })
+
 //修改联系人
 app.put('/api/persons/:id',(request,response)=>{
   const body = request.body
   const person ={
     name:body.name,
     number:body.number}
-    Phonebook.findByIdAndUpdate(request.params.id,person,{new:true}).then(updatePerson=>{
+
+    Phonebook.findByIdAndUpdate(request.params.id,person,{new:true})
+    .then(updatePerson=>{
       response.json(updatePerson)
     })
     .catch(error=>next(error))
 })
+
+const errorHandler =(error,request,response,next)=>{
+  console.error(error.message)
+
+  //处理无效id格式错误
+  if (error.name === 'CastErrpr'){
+    return response.status(400).send({error:'malformatted id '})
+}
+next(error)
+}
+app.use(errorHandler)
 
 
 const PORT = process.env.PORT
