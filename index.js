@@ -18,10 +18,10 @@ app.get('/', (request, response) => {
 //获取电话本信息
 app.get('/info',(request,response,next)=>{
   const date = new Date()
-  Phonebook.countDocuments(({})
+  Phonebook.countDocuments({})
   .then(count=>{
     response.send(`<p>Phonebook has info for ${count} people</p><p>${date}</p>`)
-  }))
+  })
   .catch(error=>next(error))
 })
 
@@ -62,45 +62,43 @@ app.post('/api/persons',(request,response,next)=>{
     const body = request.body
 
     if (!body.name){
-        return response.status(400).json({
-            error:'name missing'
-        })
+        return response.status(400).json({error:'name missing'})
     }
-    if (!body.number){
-        return response.status(400).json({
-            error:'number missing'
-        })
-    }
+    if (!body.number){return response.status(400).json({error:'number missing'
+        })}
+
     //检查唯一性名字的
     Phonebook.findOne({name:body.name})
     .then(exitingperson=>{
       if(exitingperson){
-        return response.status(400).json({
-          error:'name must be unique'
-        })
+        return response.status(400).json({error:'name must be unique'})
       }
-    })
-
-    const person = new Phonebook({
-      name: body.name,
-      number: body.number
-    })
+     
+      const person = new Phonebook({
+        name: body.name,
+        number: body.number
+      })
 
     //保存到数据库
-    person.save().then(savePersons=>{
-      response.json(savePersons)
+      return person
+      .save()
+      .then(savePersons=>{
+        response.json(savePersons)
+      })
+      .catch(error=>next(error))
     })
     .catch(error=>next(error))
 })
 
 //修改联系人
-app.put('/api/persons/:id',(request,response)=>{
-  const body = request.body
-  const person ={
-    name:body.name,
-    number:body.number}
-
-    Phonebook.findByIdAndUpdate(request.params.id,person,{new:true})
+app.put('/api/persons/:id',(request,response,next)=>{
+  const {name,number} = request.body
+  if (!name || !number){
+    return response.status(400).json({error:'name or number missing'})
+  }
+    Phonebook.findByIdAndUpdate(request.params.id,
+      {name,number},
+      {new:true,runValidators:true,context:'query'})
     .then(updatePerson=>{
       response.json(updatePerson)
     })
@@ -109,11 +107,16 @@ app.put('/api/persons/:id',(request,response)=>{
 
 const errorHandler =(error,request,response,next)=>{
   console.error(error.message)
-
+  if (error.name === "ValidationError"){
+    return response.status(400).json({error:error.message})
+  }
   //处理无效id格式错误
-  if (error.name === 'CastErrpr'){
-    return response.status(400).send({error:'malformatted id '})
+  else if (error.name === 'CastError'){
+    return response.status(400).send({error:'malformatted id'})
 }
+  else if(error.name ==='MongoServerError'){
+    return response.status(400).send({error:error.message})
+  }
 next(error)
 }
 app.use(errorHandler)
