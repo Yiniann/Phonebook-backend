@@ -21,7 +21,15 @@ export default [
       "@stylistic/js/linebreak-style": ["error", "unix"], // 使用 Unix 换行符
       "@stylistic/js/quotes": ["error", "single"], // 使用单引号
       "@stylistic/js/semi": ["error", "never"], // 禁止分号
-    },
+      'eqeqeq': 'error',//要求使用 === 和 !==
+      'no-trailing-spaces': 'error',
+    'object-curly-spacing': [
+        'error', 'always'
+    ],
+    'arrow-spacing': [
+        'error', { 'before': true, 'after': true }
+    ]
+  },
   },
   pluginJs.configs.recommended, // 使用 @eslint/js 的推荐配置
 ];
