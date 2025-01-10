@@ -8,7 +8,7 @@
     "dev": "nodemon index.js",
     "build:ui": "rm -rf dist && cd ../part2.6 && npm run build && cp -r dist ../Phonebookbackend",
     "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push",
-    "lint":"eslint ."
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
@@ -25,7 +25,8 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "mongoose": "^8.9.3"
+    "mongoose": "^8.9.3",
+    "nodemon": "^3.1.9"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
